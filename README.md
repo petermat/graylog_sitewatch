@@ -11,15 +11,19 @@ Dev setup:
 Ubuntu 18.04
 Python 3.6
 ```
-
+Prod setup:
+```
+Raspberry Pi 2 & rapbian X
+Python 3.X
+```
 
 ## Getting Started
 
-- Copy a exmpale config
+- Copy a example config
 
       cp config.exmapl.json config.json
 
-- Edit file to match you test cases
+- Edit file to match your test cases
     
     Edit server details. TLS supports TLS by defaul
       
@@ -30,15 +34,18 @@ Python 3.6
       
     Configure texted domain(s) and (optional) login page and credentails
     
+      ...
       "domain": "google.com",
       "loginx": {
         "post": "aaa",
         "username": "aaa",
         "password": "aaa"
       }
+      ...
       
-    For domain, create individual lookups witt (optional) regexes to check and/or (optional) minimal size of response content
+    For domain, create individual lookups with (optional) regexes to check and/or with (optional) minimal size of response content treshold.
     
+        ...
         "url": "https://www.google.com",
         "description":"index googlepage",
         "patterns": 
@@ -46,8 +53,8 @@ Python 3.6
             "Google",
             "Gmail"
             ],
-        "size_min": 11 
-
+        "size_min": 1234 
+        ...
 
 ### Usage
 
