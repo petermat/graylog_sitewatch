@@ -1,0 +1,25 @@
+{
+  "graylog_server": "6602.s.hostens.cloud",
+  "gralog_port": 12201,
+  "websites": [
+    {
+      "domain": "google.com",
+      "loginx": {
+        "post": "aaa",
+        "username": "aaa",
+        "password": "aaa"
+      },
+      "lookups": [
+        {
+          "url": "https://www.google.com",
+          "description":"index googlepage",
+          "patterns": [
+            "Google offered",
+            "Gmail"
+          ],
+          "size_min": 11
+        }
+      ]
+    }
+  ]
+}
