@@ -83,7 +83,7 @@ Script can be scheduler to run by cron:
 # git clone https://github.com/petermat/graylog_sitewatch.git
 
 # crontab -e
-0 */6 * * * /usr/bin/python3 /home/pi/workspace/graylog_sitewatch/graylog_sitewatch.py >> /tmp/graylog_sitewatch.log 2>&1
+0 */6 * * * cd /home/pi/workspace/graylog_sitewatch && /usr/bin/python3 graylog_sitewatch.py >> /tmp/graylog_sitewatch.log 2>&1
 
 ```
 
