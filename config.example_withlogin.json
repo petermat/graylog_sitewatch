@@ -1,0 +1,26 @@
+{
+  "graylog_server": "gaylog.yourserver.com",
+  "gralog_port": 12201,
+  "websites": [
+    {
+      "domain": "yourprotectedsite.com",
+      "login": {
+        "login_url": "https://yoursite.com/login",
+        "csrftokenname":"csrftoken",
+        "username": "username",
+        "password": "password"
+      },
+      "lookups": [
+        {
+          "url": "https://yoursite.com/personal_blog",
+          "description":"my personal blog",
+          "patterns": [
+            "dog",
+            "cat"
+          ],
+          "size_min": 11
+        }
+      ]
+    }
+  ]
+}

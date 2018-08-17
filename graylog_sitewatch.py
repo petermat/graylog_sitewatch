@@ -29,20 +29,46 @@ def read_config(file='config.json'):
     json1_str = json1_file.read()
     return  json.loads(json1_str)
 
-def check_lookup(web_lookup):
+
+def init_session(login_payload):
+    session = requests.session()
+    session.headers.update({
+        'User-Agent': 'Mozilla/5.0 (X11; Linux i686; rv:39.0) Gecko/20100101 Firefox/39.0'
+    })
+
+    if login_payload:
+
+        session.get(login_payload['login_url'])
+
+
+        # login session created
+        payload = {
+                    'username': login_payload['username'],
+                    'password': login_payload['password'],
+                    'next' : '/'
+                }
+
+        if login_payload.get('csrftokenname'):
+            if login_payload['csrftokenname'] in session.cookies:
+                csrftoken = session.cookies[login_payload['csrftokenname']]
+                payload['csrfmiddlewaretoken'] = csrftoken
+
+        _ = session.post(login_payload['login_url'], data=payload)
+
+    return session
+
+
+def check_lookup(web_lookup, session):
     """
     :param web_lookup:
     :return:
     """
 
     url = web_lookup['url']
-    patterns = web_lookup['patterns']
-    size_min = web_lookup['size_min']
+    patterns = web_lookup.get('patterns')
+    size_min = web_lookup.get('size_min')
 
-    session = requests.session()
-    session.headers.update({
-        'User-Agent': 'Mozilla/5.0 (X11; Linux i686; rv:39.0) Gecko/20100101 Firefox/39.0'
-    })
+
     response = session.get(url)
 
     lookup_status = "OK"
@@ -53,18 +79,20 @@ def check_lookup(web_lookup):
         lookup_message += "retrieved code: {}".format(response.status_code)
 
     else:
-        if response.elapsed.total_seconds() > 30:
+        if response.elapsed.total_seconds() > 20:
             lookup_status = "WARNING"
             lookup_message += "slow load: {}s ".format(response.elapsed.total_seconds())
 
-        if len(response.content) < size_min:
-            lookup_status = "WARNING"
-            lookup_message += "small content: {}b ".format(len(response.content))
-
-        for pttrn in patterns:
-            if not re.search(pttrn, response.text, re.DOTALL):
+        if size_min:
+            if len(response.content) < size_min:
                 lookup_status = "WARNING"
-                lookup_message += "no match: {} ".format(pttrn)
+                lookup_message += "small content: {}b ".format(len(response.content))
+
+        if patterns:
+            for pttrn in patterns:
+                if not re.search(pttrn, response.text, re.DOTALL):
+                    lookup_status = "WARNING"
+                    lookup_message += "no match: {} ".format(pttrn)
 
     return lookup_status, lookup_message
 
@@ -100,7 +128,7 @@ def main(args, loglevel):
     ### Loggers END ###
 
 
-    logger.debug('Graylog site monitor activated with config file {}'.format(args.config))
+    logger.info('Graylog site monitor activated with config file: {}'.format(args.config))
     logger.debug('Contains {} websites'.format(len(config_dict['websites'])))
 
     for website in config_dict['websites']:
@@ -109,28 +137,27 @@ def main(args, loglevel):
 
         logger.debug("Starting check of website: {}, has {} lookups".format(web_domain,len(web_lookups)))
 
-        if website.get("login"):
-            logger.debug("Website has login procedure")
-
+        requests_session = init_session(website.get("login"))
 
         for counter, web_lookup in enumerate(web_lookups):
             web_url = web_lookup['url']
-            lookup_status, lookup_message = check_lookup(web_lookup)
-            lookup_description = web_lookup['description']
+            lookup_status, lookup_message = check_lookup(web_lookup, requests_session)
+            lookup_description = web_lookup.get('description')
 
             if lookup_status == "OK":
-                logger.debug("Lookup n.{}: OK, url: {}".format(counter, web_lookup['url']),
+                logger.debug("Lookup n.{}: OK, url: {}".format(counter, web_url),
                              extra={'url': web_url, 'domain': web_domain, 'lookup_message': lookup_message})
             elif lookup_status == "WARNING":
-                logger.warning("Warning in {} ({}), {}, url: {}".format(web_domain,lookup_description,lookup_message, web_url),
+                logger.warning("Warning in {} (Desc:{}), {}, url: {}".format(web_domain,lookup_description,lookup_message, web_url),
                                extra={'url':web_url,'domain': web_domain, 'lookup_message':lookup_message})
             elif lookup_status == "ERROR":
-                logger.error("Error in {} ({}), {}, url: {}".format(web_domain,lookup_description,lookup_message, web_url),
+                logger.error("Error in {} (Desc:{}), {}, url: {}".format(web_domain,lookup_description,lookup_message, web_url),
                                extra={'url':web_url,'domain': web_domain, 'lookup_message':lookup_message})
             else:
-                logger.critical("Malfunction in {} ({}): lookup_status not recognized: {}, type:".format(web_url, lookup_description,type(lookup_status)),
+                logger.critical("Malfunction in {} (Desc:{}): lookup_status not recognized: {}, type:".format(web_url, lookup_description,type(lookup_status)),
                                 extra={'url': web_url, 'domain': web_domain, 'lookup_message': lookup_message})
 
+        requests_session.close()
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
