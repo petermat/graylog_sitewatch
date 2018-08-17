@@ -11,7 +11,7 @@ Dev setup:
 Ubuntu 18.04
 Python 3.6
 ```
-Prod RPI setup:
+RPI setup:
 ```
 Raspberry Pi 2  
 Rapbian Version:June 2018
