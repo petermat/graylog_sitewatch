@@ -11,17 +11,26 @@ Dev setup:
 Ubuntu 18.04
 Python 3.6
 ```
-Prod setup:
+Prod RPI setup:
 ```
-Raspberry Pi 2 & rapbian X
-Python 3.X
+Raspberry Pi 2  
+Rapbian Version:June 2018
+    Release date:2018-06-27
+    Kernel version:4.14
+Python 3.5
+```
+Reruirements:
+```
+pygelf >= 0.3.4
+requests >= 2.19.1
+urllib3 >= 1.23
 ```
 
 ## Getting Started
 
 - Copy a example config
 
-      cp config.exmapl.json config.json
+      # cp config.exmapl.json config.json
 
 - Edit file to match your test cases
     
@@ -32,14 +41,15 @@ Python 3.X
       "gralog_port": 12201,
       ...
       
-    Configure texted domain(s) and (optional) login page and credentails
+    Configure texted domain(s) and (optional) login page, credentails and name of csrf cookie key from cookie.
     
       ...
-      "domain": "google.com",
+      "domain": "yoursite.com",
       "loginx": {
-        "post": "aaa",
-        "username": "aaa",
-        "password": "aaa"
+        "login_url": "https://yoursite.com/login",
+        "csrftokenname":"csrftoken",
+        "username": "username",
+        "password": "password"
       }
       ...
       
@@ -56,25 +66,33 @@ Python 3.X
         "size_min": 1234 
         ...
 
+    See example files config.example.json and config.example_withlogn.json.
+
 ### Usage
 
 Running script in verbose (DEBUG) and custom config file:
 
 ```
-python graylog_sitewatch.py --verbose --config custom_config.json
+# python graylog_sitewatch.py --verbose --config custom_config.json
 ```
 
 Script can be scheduler to run by cron:
 
 ```
-% crontab -e
-+ 
+# mkdir workspace && cd workspace
+# git clone https://github.com/petermat/graylog_sitewatch.git
+
+# crontab -e
+0 */6 * * * /usr/bin/python3 /home/pi/workspace/graylog_sitewatch/graylog_sitewatch.py >> /tmp/graylog_sitewatch.log 2>&1
+
 ```
 
 Running script from cron with custom virtual environment:
-
+    
+Running source from a cronfile won't work as cron uses /bin/sh as its default shell, which doesn't support source. You need to set the SHELL environment variable to be /bin/bash:
 ```
-
+SHELL=/bin/bash
+0 */6 * * * source /path/to/virtualenv/bin/activate && /path/to/graylog_sitewatch.py --verbose > /dev/null
 ```
 
 
@@ -82,7 +100,7 @@ Running script from cron with custom virtual environment:
 
 * **Peter Matkovski** - *Initial work*
 
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
+See also the list of [contributors](#) who participated in this project.
 
 ## License
 
